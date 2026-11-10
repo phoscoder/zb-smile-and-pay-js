@@ -4,6 +4,7 @@ import { HttpClient, type FetchLike } from './http.js';
 import { ExpressCheckout } from './resources/express.js';
 import { Payments } from './resources/payments.js';
 import { Wallet } from './resources/wallet.js';
+import { Webhooks } from './resources/webhooks.js';
 
 export interface SmileAndPayOptions {
   /** Merchant API key (`x-api-key`). */
@@ -45,6 +46,8 @@ export class SmileAndPay {
   readonly express: ExpressCheckout;
   /** Wallet Services: outbound cashouts and their status. */
   readonly wallet: Wallet;
+  /** Parse and verify `resultUrl` callbacks. */
+  readonly webhooks: Webhooks;
 
   constructor(options: SmileAndPayOptions) {
     if (!options?.apiKey) throw new SmileAndPayError('apiKey is required');
@@ -80,5 +83,6 @@ export class SmileAndPay {
     this.payments = new Payments(gateway);
     this.express = new ExpressCheckout(gateway);
     this.wallet = new Wallet(wallet);
+    this.webhooks = new Webhooks(this.payments);
   }
 }

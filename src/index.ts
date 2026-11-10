@@ -12,3 +12,11 @@ export {
 } from './resources/payments.js';
 export { ExpressCheckout, innbucksDeepLink } from './resources/express.js';
 export { Wallet } from './resources/wallet.js';
+export {
+  Webhooks,
+  SmileAndPayWebhookError,
+  parseWebhook,
+  type WebhookEvent,
+  type VerifiedWebhook,
+  type VerifyWebhookOptions,
+} from './resources/webhooks.js';
