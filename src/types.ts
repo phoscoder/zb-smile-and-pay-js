@@ -266,26 +266,60 @@ export type SmileAndPayWebhookBody = PaymentCallback | EWalletCallback;
 // Wallet services (outbound)
 // ---------------------------------------------------------------------------
 
-export interface CashoutRequest {
+/** Currencies for wallet cashouts (three-letter codes, not the gateway's numeric ones). */
+export type CashoutCurrency = LooseString<'USD' | 'ZWG'>;
+
+/** The two legs of a cashout, as used in the endpoint path. */
+export type CashoutRequestType = 'auth' | 'payment';
+
+/** Request body for `wallet.cashoutAuth` (leg 1). */
+export interface CashoutAuthRequest {
   /** Wallet receiving funds, e.g. `263772240291`. */
   receiverMobile: string;
   /** Merchant source wallet initiating the cashout. */
   senderPhone: string;
   amount: number;
   /** Three-letter currency, e.g. `USD` or `ZWG`. */
-  currency: LooseString<'USD' | 'ZWG'>;
+  currency: CashoutCurrency;
   /** Originating channel. Defaults to `WEB`. */
-  channel?: string;
+  channel?: LooseString<'WEB'>;
+  /** Short description or reference for the transaction. */
   narration: string;
 }
 
-export interface CashoutPaymentRequest extends CashoutRequest {
-  /** `transactionId` returned by the auth leg. */
+/** Request body for `wallet.cashoutPayment` (leg 2). */
+export interface CashoutPaymentRequest extends CashoutAuthRequest {
+  /** `transactionId` returned by the auth leg. Required. */
   transactionId: string;
 }
 
-/** Wallet service responses are not documented; fields are best-effort. */
+/** Shared cashout fields. Alias of {@link CashoutAuthRequest}, used by `wallet.cashout`. */
+export type CashoutRequest = CashoutAuthRequest;
+
+/**
+ * Base shape of Wallet Services responses. The docs do not publish
+ * response bodies, so every field is optional and unknown fields pass
+ * through.
+ */
 export interface WalletResponse {
   transactionId?: string;
   [key: string]: unknown;
+}
+
+/** Response from `wallet.cashoutAuth`. Funds are locked, not yet moved. */
+export interface CashoutAuthResponse extends WalletResponse {
+  /** Pass this to `wallet.cashoutPayment`. Implied by the docs; not yet seen in a live response. */
+  transactionId?: string;
+}
+
+/** Response from `wallet.cashoutPayment`. Funds have moved. */
+export type CashoutPaymentResponse = WalletResponse;
+
+/** Response from `wallet.checkStatus`. */
+export type CashoutStatusResponse = WalletResponse;
+
+/** Result of `wallet.cashout`, which runs both legs. */
+export interface CashoutResult {
+  auth: CashoutAuthResponse;
+  payment: CashoutPaymentResponse;
 }

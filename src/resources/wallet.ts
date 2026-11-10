@@ -1,5 +1,13 @@
 import type { HttpClient } from '../http.js';
-import type { CashoutPaymentRequest, CashoutRequest, WalletResponse } from '../types.js';
+import type {
+  CashoutAuthRequest,
+  CashoutAuthResponse,
+  CashoutPaymentRequest,
+  CashoutPaymentResponse,
+  CashoutRequest,
+  CashoutResult,
+  CashoutStatusResponse,
+} from '../types.js';
 import { encodePathSegment, type CallOptions } from './shared.js';
 
 /**
@@ -17,8 +25,8 @@ export class Wallet {
   constructor(private readonly http: HttpClient) {}
 
   /** Leg 1. `POST /transactions/subscriber/external/cashout/auth` */
-  cashoutAuth(request: CashoutRequest, options: CallOptions = {}): Promise<WalletResponse> {
-    return this.http.request<WalletResponse>({
+  cashoutAuth(request: CashoutAuthRequest, options: CallOptions = {}): Promise<CashoutAuthResponse> {
+    return this.http.request<CashoutAuthResponse>({
       method: 'POST',
       path: '/transactions/subscriber/external/cashout/auth',
       body: { channel: 'WEB', ...request, transactionId: '' },
@@ -27,11 +35,11 @@ export class Wallet {
   }
 
   /** Leg 2. `POST /transactions/subscriber/external/cashout/payment` */
-  cashoutPayment(request: CashoutPaymentRequest, options: CallOptions = {}): Promise<WalletResponse> {
+  cashoutPayment(request: CashoutPaymentRequest, options: CallOptions = {}): Promise<CashoutPaymentResponse> {
     if (!request.transactionId) {
       throw new TypeError('transactionId from cashoutAuth is required');
     }
-    return this.http.request<WalletResponse>({
+    return this.http.request<CashoutPaymentResponse>({
       method: 'POST',
       path: '/transactions/subscriber/external/cashout/payment',
       body: { channel: 'WEB', ...request },
@@ -44,10 +52,7 @@ export class Wallet {
    * Use the two methods separately if you need a confirmation step
    * between them.
    */
-  async cashout(
-    request: CashoutRequest,
-    options: CallOptions = {},
-  ): Promise<{ auth: WalletResponse; payment: WalletResponse }> {
+  async cashout(request: CashoutRequest, options: CallOptions = {}): Promise<CashoutResult> {
     const auth = await this.cashoutAuth(request, options);
     const transactionId = auth.transactionId;
     if (typeof transactionId !== 'string' || !transactionId) {
@@ -63,9 +68,9 @@ export class Wallet {
    *
    * `GET /transactions/api/v1/transaction/{transactionReference}/check-status`
    */
-  checkStatus(transactionReference: string, options: CallOptions = {}): Promise<WalletResponse> {
+  checkStatus(transactionReference: string, options: CallOptions = {}): Promise<CashoutStatusResponse> {
     const ref = encodePathSegment(transactionReference, 'transactionReference');
-    return this.http.request<WalletResponse>({
+    return this.http.request<CashoutStatusResponse>({
       method: 'GET',
       path: `/transactions/api/v1/transaction/${ref}/check-status`,
       ...options,

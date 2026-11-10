@@ -1,5 +1,12 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import type {
+  CashoutAuthRequest,
+  CashoutAuthResponse,
+  CashoutPaymentRequest,
+  CashoutPaymentResponse,
+  CashoutRequest,
+  CashoutResult,
+  CashoutStatusResponse,
   EWalletCallback,
   InitializeSmileAndPay,
   InitiatePayment,
@@ -28,5 +35,17 @@ describe('public type aliases', () => {
     expectTypeOf<PaymentCallback>().toExtend<SmileAndPayWebhookBody>();
     expectTypeOf<EWalletCallback>().toExtend<SmileAndPayWebhookBody>();
     expectTypeOf<SmileAndPayWebhookBody>().toExtend<Parameters<typeof parseWebhook>[0]>();
+  });
+
+  it('wallet methods use the cashout types', () => {
+    type Wallet = SmileAndPay['wallet'];
+    expectTypeOf<Wallet['cashoutAuth']>().parameter(0).toEqualTypeOf<CashoutAuthRequest>();
+    expectTypeOf<Wallet['cashoutAuth']>().returns.resolves.toEqualTypeOf<CashoutAuthResponse>();
+    expectTypeOf<Wallet['cashoutPayment']>().parameter(0).toEqualTypeOf<CashoutPaymentRequest>();
+    expectTypeOf<Wallet['cashoutPayment']>().returns.resolves.toEqualTypeOf<CashoutPaymentResponse>();
+    expectTypeOf<Wallet['cashout']>().parameter(0).toEqualTypeOf<CashoutRequest>();
+    expectTypeOf<Wallet['cashout']>().returns.resolves.toEqualTypeOf<CashoutResult>();
+    expectTypeOf<Wallet['checkStatus']>().returns.resolves.toEqualTypeOf<CashoutStatusResponse>();
+    expectTypeOf<CashoutPaymentRequest['transactionId']>().toEqualTypeOf<string>();
   });
 });
