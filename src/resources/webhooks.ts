@@ -1,11 +1,19 @@
 import { SmileAndPayError } from '../errors.js';
-import type { EWalletCallback, PaymentCallback, TransactionStatusResponse } from '../types.js';
+import type {
+  EWalletCallback,
+  PaymentCallback,
+  SmileAndPayWebhookBody,
+  TransactionStatusResponse,
+} from '../types.js';
 import { isFinalStatus, isSuccessfulStatus, type Payments } from './payments.js';
 import type { CallOptions } from './shared.js';
 
 /** ISO 20022 transaction statuses that mean the funds were accepted. */
 const ISO_SUCCESS = ['ACSC', 'ACSP', 'ACCC', 'ACWC'];
 const ISO_FAILURE = ['RJCT', 'CANC'];
+
+/** What `parseWebhook` and `webhooks.verify` accept: the raw body or a parsed object. */
+export type WebhookInput = string | Uint8Array | SmileAndPayWebhookBody | Record<string, unknown>;
 
 /** A webhook payload after parsing. */
 export type WebhookEvent =
@@ -48,7 +56,7 @@ export class SmileAndPayWebhookError extends SmileAndPayError {
  * as unauthenticated. Call `webhooks.verify()` (or `payments.checkStatus`)
  * before fulfilling an order.
  */
-export function parseWebhook(body: string | Uint8Array | Record<string, unknown>): WebhookEvent {
+export function parseWebhook(body: WebhookInput): WebhookEvent {
   let data: unknown = body;
   if (typeof body === 'string' || body instanceof Uint8Array) {
     const text = typeof body === 'string' ? body : new TextDecoder().decode(body);
@@ -120,7 +128,7 @@ export class Webhooks {
   constructor(private readonly payments: Payments) {}
 
   /** Parse a callback body without verifying it. */
-  parse(body: string | Uint8Array | Record<string, unknown>): WebhookEvent {
+  parse(body: WebhookInput): WebhookEvent {
     return parseWebhook(body);
   }
 
@@ -130,7 +138,7 @@ export class Webhooks {
    * the callback (different amount or gateway reference).
    */
   async verify(
-    body: string | Uint8Array | Record<string, unknown>,
+    body: WebhookInput,
     options: VerifyWebhookOptions = {},
   ): Promise<VerifiedWebhook> {
     const { expectedAmount, ...callOptions } = options;

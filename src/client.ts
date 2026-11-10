@@ -27,6 +27,9 @@ export interface SmileAndPayOptions {
   headers?: Record<string, string>;
 }
 
+/** Options for `new SmileAndPay(...)`. Alias of {@link SmileAndPayOptions}. */
+export type InitializeSmileAndPay = SmileAndPayOptions;
+
 /**
  * Smile&Pay API client.
  *

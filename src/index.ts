@@ -1,4 +1,4 @@
-export { SmileAndPay, type SmileAndPayOptions } from './client.js';
+export { SmileAndPay, type SmileAndPayOptions, type InitializeSmileAndPay } from './client.js';
 export * from './constants.js';
 export * from './errors.js';
 export type * from './types.js';
@@ -17,6 +17,7 @@ export {
   SmileAndPayWebhookError,
   parseWebhook,
   type WebhookEvent,
+  type WebhookInput,
   type VerifiedWebhook,
   type VerifyWebhookOptions,
 } from './resources/webhooks.js';

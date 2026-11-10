@@ -70,6 +70,12 @@ export interface InitiateTransactionResponse extends GatewayResponse {
   transactionReference: string;
 }
 
+/** Request body for `payments.initiate` (standard checkout). */
+export type InitiatePayment = InitiateTransactionRequest;
+
+/** Response from `payments.initiate`. */
+export type InitiatePaymentResponse = InitiateTransactionResponse;
+
 // ---------------------------------------------------------------------------
 // Express checkout
 // ---------------------------------------------------------------------------
@@ -249,6 +255,12 @@ export interface EWalletCallback {
   }>;
   [key: string]: unknown;
 }
+
+/**
+ * Any body Smile&Pay POSTs to your `resultUrl`: the standard/express
+ * payment callback, or the ISO 20022 eWallet status report.
+ */
+export type SmileAndPayWebhookBody = PaymentCallback | EWalletCallback;
 
 // ---------------------------------------------------------------------------
 // Wallet services (outbound)
