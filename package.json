@@ -1,0 +1,58 @@
+{
+  "name": "zb-smileandpay",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the ZB Bank Smile&Pay payment gateway (Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet, Visa/Mastercard)",
+  "license": "MIT",
+  "author": "Victor Phos",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sandbox": "node --env-file=.env --import tsx examples/sandbox.ts",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "keywords": [
+    "zb",
+    "zb-bank",
+    "smileandpay",
+    "smile-and-pay",
+    "payments",
+    "zimbabwe",
+    "ecocash",
+    "innbucks",
+    "onemoney",
+    "omari",
+    "smilecash"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
