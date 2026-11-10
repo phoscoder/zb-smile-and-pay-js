@@ -23,15 +23,16 @@ pnpm add zb-smileandpay   # or npm i / yarn add
 ## Quick start
 
 ```ts
-import { SmileAndPay, CurrencyCode } from 'zb-smileandpay';
+import { SmileAndPay, CurrencyCode, type InitializeSmileAndPay, type InitiatePayment } from 'zb-smileandpay';
 
-const smileAndPay = new SmileAndPay({
+const config: InitializeSmileAndPay = {
   apiKey: process.env.SMILEANDPAY_API_KEY!,
   apiSecret: process.env.SMILEANDPAY_API_SECRET!,
   environment: 'sandbox', // or 'production'
-});
+};
+const smileAndPay = new SmileAndPay(config);
 
-const { paymentUrl } = await smileAndPay.payments.initiate({
+const payment: InitiatePayment = {
   orderReference: 'ORDER-12345', // must be unique per payment
   amount: 100,
   currencyCode: CurrencyCode.USD, // '840' USD, '924' ZWG
@@ -39,7 +40,8 @@ const { paymentUrl } = await smileAndPay.payments.initiate({
   itemDescription: '1 Month Premium Access',
   returnUrl: 'https://yoursite.com/payment/success',
   resultUrl: 'https://yoursite.com/api/webhook',
-});
+};
+const { paymentUrl } = await smileAndPay.payments.initiate(payment);
 
 // Redirect the customer to paymentUrl.
 ```
@@ -142,10 +144,13 @@ await smileAndPay.payments.initiate({
 Smile&Pay POSTs the result to your `resultUrl`. Return HTTP 200 quickly, or the gateway keeps retrying. **The docs describe no webhook signature**, so do not trust the payload by itself. `webhooks.verify` parses it, then re-reads the transaction from the API and checks that the reference and amount match:
 
 ```ts
+import type { SmileAndPayWebhookBody } from 'zb-smileandpay';
+
 app.post('/api/webhook', express.json(), async (req, res) => {
   res.sendStatus(200); // acknowledge first
 
-  const { event, paid } = await smileAndPay.webhooks.verify(req.body, { expectedAmount: 100 });
+  const body: SmileAndPayWebhookBody = req.body;
+  const { event, paid } = await smileAndPay.webhooks.verify(body, { expectedAmount: 100 });
   if (paid && !(await alreadyFulfilled(event.orderReference))) {
     await fulfil(event.orderReference); // make this idempotent: duplicate callbacks happen
   }
@@ -159,20 +164,49 @@ app.post('/api/webhook', express.json(), async (req, res) => {
 Outbound transfers to a subscriber's SmileCash wallet, in two legs:
 
 ```ts
-const auth = await smileAndPay.wallet.cashoutAuth({
+import type { CashoutAuthRequest } from 'zb-smileandpay';
+
+const request: CashoutAuthRequest = {
   receiverMobile: '263772240291',
   senderPhone: '263782676047',
   amount: 2,
   currency: 'ZWG',
   narration: 'Payout',
-});
-await smileAndPay.wallet.cashoutPayment({ ...sameRequest, transactionId: auth.transactionId! });
-// or both legs at once: await smileAndPay.wallet.cashout(request)
+};
+
+const auth = await smileAndPay.wallet.cashoutAuth(request); // CashoutAuthResponse
+await smileAndPay.wallet.cashoutPayment({ ...request, transactionId: auth.transactionId! });
+// or both legs at once: const { auth, payment } = await smileAndPay.wallet.cashout(request);
 
 await smileAndPay.wallet.checkStatus('Wf2a8bbfdec1446d');
 ```
 
 > Wallet Services may need to be enabled on your merchant account. Sandbox gateway credentials currently get `403 Forbidden` there. Their response bodies are not documented, so they are typed loosely, and the production wallet URL is inferred. Override it with `walletBaseUrl` if needed.
+
+## Types
+
+Every request, response and webhook shape is exported as a TypeScript type. The main ones:
+
+| Type                        | Used for                                                     |
+| --------------------------- | ------------------------------------------------------------ |
+| `InitializeSmileAndPay`     | Options for `new SmileAndPay(...)` (same as `SmileAndPayOptions`) |
+| `InitiatePayment`           | `payments.initiate` request (same as `InitiateTransactionRequest`) |
+| `InitiatePaymentResponse`   | `payments.initiate` response, with `paymentUrl`              |
+| `TransactionStatusResponse` | `payments.checkStatus` / `waitForCompletion` result          |
+| `SmileAndPayWebhookBody`    | Any `resultUrl` callback: `PaymentCallback` or `EWalletCallback` |
+| `WebhookEvent`              | Result of `parseWebhook` / `webhooks.parse`                  |
+| `CashoutAuthRequest`        | `wallet.cashoutAuth` request (leg 1)                         |
+| `CashoutAuthResponse`       | `wallet.cashoutAuth` response, with `transactionId`          |
+| `CashoutPaymentRequest`     | `wallet.cashoutPayment` request (leg 2, needs `transactionId`) |
+| `CashoutPaymentResponse`    | `wallet.cashoutPayment` response                             |
+| `CashoutStatusResponse`     | `wallet.checkStatus` response                                |
+| `CashoutResult`             | `wallet.cashout` result: `{ auth, payment }`                 |
+
+Express checkout has one request type per method (`EcocashPaymentRequest`, `InnbucksPaymentRequest`, `SmileCashPaymentRequest`, `OmariPaymentRequest`, `OneMoneyPaymentRequest`, `EWalletPaymentRequest`, `CardPaymentRequest`) plus `SmileCashConfirmRequest` and `OmariConfirmRequest` for the OTP step.
+
+```ts
+import type { InitiatePayment, SmileAndPayWebhookBody, CashoutAuthRequest } from 'zb-smileandpay';
+```
 
 ## Errors
 
@@ -228,3 +262,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 MIT
+
+## Reference
+
+Official Smile&Pay API documentation: https://smileandpay.zb.co.zw/documentation
