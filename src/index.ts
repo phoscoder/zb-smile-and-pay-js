@@ -10,3 +10,4 @@ export {
   isSuccessfulStatus,
   type WaitForCompletionOptions,
 } from './resources/payments.js';
+export { ExpressCheckout, innbucksDeepLink } from './resources/express.js';

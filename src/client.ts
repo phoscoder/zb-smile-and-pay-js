@@ -1,6 +1,7 @@
 import { GATEWAY_BASE_URLS, type Environment } from './constants.js';
 import { SmileAndPayError } from './errors.js';
 import { HttpClient, type FetchLike } from './http.js';
+import { ExpressCheckout } from './resources/express.js';
 import { Payments } from './resources/payments.js';
 
 export interface SmileAndPayOptions {
@@ -35,6 +36,8 @@ export class SmileAndPay {
   readonly environment: Environment;
   /** Standard checkout, status checks, cancellation and polling. */
   readonly payments: Payments;
+  /** Express checkout: Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet, card. */
+  readonly express: ExpressCheckout;
 
   constructor(options: SmileAndPayOptions) {
     if (!options?.apiKey) throw new SmileAndPayError('apiKey is required');
@@ -60,5 +63,6 @@ export class SmileAndPay {
     });
 
     this.payments = new Payments(gateway);
+    this.express = new ExpressCheckout(gateway);
   }
 }
