@@ -11,3 +11,4 @@ export {
   type WaitForCompletionOptions,
 } from './resources/payments.js';
 export { ExpressCheckout, innbucksDeepLink } from './resources/express.js';
+export { Wallet } from './resources/wallet.js';

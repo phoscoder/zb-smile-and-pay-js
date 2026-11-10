@@ -1,8 +1,9 @@
-import { GATEWAY_BASE_URLS, type Environment } from './constants.js';
+import { GATEWAY_BASE_URLS, WALLET_BASE_URLS, type Environment } from './constants.js';
 import { SmileAndPayError } from './errors.js';
 import { HttpClient, type FetchLike } from './http.js';
 import { ExpressCheckout } from './resources/express.js';
 import { Payments } from './resources/payments.js';
+import { Wallet } from './resources/wallet.js';
 
 export interface SmileAndPayOptions {
   /** Merchant API key (`x-api-key`). */
@@ -13,6 +14,10 @@ export interface SmileAndPayOptions {
   environment?: Environment;
   /** Override the Payments Gateway base URL. */
   baseUrl?: string;
+  /** Override the Wallet Services base URL. */
+  walletBaseUrl?: string;
+  /** API key for Wallet Services, if ZB issued a different one. Default: `apiKey`. */
+  walletApiKey?: string;
   /** Request timeout. Default: 30000ms. */
   timeoutMs?: number;
   /** Custom fetch implementation. Default: `globalThis.fetch`. */
@@ -38,6 +43,8 @@ export class SmileAndPay {
   readonly payments: Payments;
   /** Express checkout: Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet, card. */
   readonly express: ExpressCheckout;
+  /** Wallet Services: outbound cashouts and their status. */
+  readonly wallet: Wallet;
 
   constructor(options: SmileAndPayOptions) {
     if (!options?.apiKey) throw new SmileAndPayError('apiKey is required');
@@ -62,7 +69,16 @@ export class SmileAndPay {
       headers: options.headers,
     });
 
+    const wallet = new HttpClient({
+      apiKey: options.walletApiKey ?? options.apiKey,
+      baseUrl: options.walletBaseUrl ?? WALLET_BASE_URLS[environment],
+      timeoutMs: options.timeoutMs ?? 30_000,
+      fetch: fetchImpl,
+      headers: options.headers,
+    });
+
     this.payments = new Payments(gateway);
     this.express = new ExpressCheckout(gateway);
+    this.wallet = new Wallet(wallet);
   }
 }
