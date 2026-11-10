@@ -1,7 +1,7 @@
 {
   "name": "zb-smileandpay",
   "version": "0.1.0",
-  "description": "TypeScript SDK for the ZB Bank Smile&Pay payment gateway (Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet, Visa/Mastercard)",
+  "description": "Unofficial TypeScript SDK for the ZB Bank Smile&Pay payment gateway (Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet, Visa/Mastercard)",
   "license": "MIT",
   "author": "Victor Phos",
   "type": "module",

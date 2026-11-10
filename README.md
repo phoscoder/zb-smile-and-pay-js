@@ -1,6 +1,9 @@
-# zb-smileandpay
+# ZB Smile and Pay TypeScript SDK
 
 TypeScript SDK for the [ZB Bank Smile&Pay](https://smileandpay.zb.co.zw/documentation) payment gateway.
+
+> [!IMPORTANT]
+> **This is an unofficial SDK.** It is not made, endorsed or supported by ZB Bank or Smile&Pay. It is built from the public [Smile&Pay documentation](https://smileandpay.zb.co.zw/documentation) and tested against the sandbox. For account, credential or production issues, contact ZB Bank directly. "ZB", "ZB Bank" and "Smile&Pay" are trademarks of their respective owners.
 
 - Standard (hosted) checkout, plus express checkout for **Ecocash, Innbucks, SmileCash, Omari, OneMoney, eWallet and Visa/Mastercard**
 - Status checks, cancellation, and a completion-polling helper
@@ -217,6 +220,10 @@ pnpm build       # dist/ (ESM + CJS + .d.ts)
 cp .env.example .env  # add sandbox credentials
 pnpm sandbox          # live smoke test against the sandbox
 ```
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
